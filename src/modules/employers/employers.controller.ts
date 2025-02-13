@@ -1,7 +1,10 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { EmployersService } from './employers.service';
 import { CreateEmployerDto } from './dto/create-employer.dto';
 import { GetListDto } from '../../common/dto/common.dto';
+import { ApiResponse } from '@nestjs/swagger';
+import { Employer } from '../../common/database/schemas/employer.schema';
+import { PaginationOutputEntity } from '../../common/entities/pagination-output.entity';
 
 @Controller('employers')
 export class EmployersController {
@@ -13,6 +16,10 @@ export class EmployersController {
   }
 
   @Get()
+  @ApiResponse({
+    status: 200,
+    type: PaginationOutputEntity<Employer>,
+  })
   async getAll(@Query() getListDto: GetListDto) {
     return this.employerService.getAll(getListDto);
   }

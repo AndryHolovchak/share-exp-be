@@ -26,14 +26,12 @@ export class PaginationDto {
   readonly limit?: number = 10;
 }
 
-export class SearchDto {
+export class GetListDto extends PaginationDto {
   @ApiProperty({
     example: 'search',
-    description: 'search query',
+    description: 'search',
     required: false,
   })
   @IsOptional()
   readonly search?: string;
 }
-
-export type GetListDto = PaginationDto & SearchDto;

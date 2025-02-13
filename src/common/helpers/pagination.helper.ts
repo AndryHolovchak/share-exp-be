@@ -1,4 +1,4 @@
-import { Model, QueryWithHelpers, RootFilterQuery } from 'mongoose';
+import { Model, RootFilterQuery } from 'mongoose';
 import { PaginationDto } from '../dto/common.dto';
 import { IPaginationOutput } from '../interfaces/pagination-output';
 
