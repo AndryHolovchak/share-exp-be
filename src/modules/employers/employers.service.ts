@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Employer } from '../../common/database/schemas/employer.schema';
 import { Model } from 'mongoose';
 import { CreateEmployerDto } from './dto/create-employer.dto';
+import { GetListDto } from '../../common/dto/common.dto';
+import { paginate } from '../../common/helpers/pagination.helper';
 
 @Injectable()
 export class EmployersService {
@@ -15,9 +17,13 @@ export class EmployersService {
     return newEmployer.save();
   }
 
-  getAll(name: string = '') {
-    return this.employerModel.find({
-      name: { $regex: name, $options: 'i' },
-    });
+  getAll(getListDto: GetListDto) {
+    return paginate(
+      this.employerModel,
+      {
+        name: { $regex: getListDto.search ?? '', $options: 'i' },
+      },
+      getListDto,
+    );
   }
 }

@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { EmployersService } from './employers.service';
 import { CreateEmployerDto } from './dto/create-employer.dto';
+import { GetListDto } from '../../common/dto/common.dto';
 
 @Controller('employers')
 export class EmployersController {
@@ -12,7 +13,7 @@ export class EmployersController {
   }
 
   @Get()
-  async getAll(@Query('search') search: string) {
-    return this.employerService.getAll(search);
+  async getAll(@Query() getListDto: GetListDto) {
+    return this.employerService.getAll(getListDto);
   }
 }
