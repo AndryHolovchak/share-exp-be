@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { Rating, RatingEnum } from '../../../common/types/review.types';
 
 export class CreateReviewDto {
@@ -17,6 +17,7 @@ export class CreateReviewDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(2048)
   content: string;
 
   @ApiProperty({
