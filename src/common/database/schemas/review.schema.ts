@@ -15,7 +15,7 @@ export class Review {
     ref: 'Employer',
     type: MongooseSchema.Types.ObjectId,
   })
-  employer_id: Rating;
+  employerId: MongooseSchema.Types.ObjectId;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);

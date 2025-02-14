@@ -33,7 +33,7 @@ export class GetListDto extends PaginationDto {
     required: false,
   })
   @IsOptional()
-  readonly search?: string;
+  readonly search?: string = '';
 }
 
 export class IdDto {
