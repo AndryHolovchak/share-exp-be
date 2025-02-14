@@ -10,8 +10,11 @@ import { PaginationOutputEntity } from '../../common/entities/pagination-output.
 export class EmployersController {
   constructor(private employerService: EmployersService) {}
   @Post()
+  @ApiResponse({
+    status: 201,
+    type: Employer,
+  })
   create(@Body() createEmployerDto: CreateEmployerDto) {
-    console.log(createEmployerDto);
     return this.employerService.create(createEmployerDto);
   }
 
@@ -20,8 +23,8 @@ export class EmployersController {
     status: 200,
     type: PaginationOutputEntity<Employer>,
   })
-  async getAll(@Query() getListDto: GetListDto) {
-    return this.employerService.getAll(getListDto);
+  async findAll(@Query() getListDto: GetListDto) {
+    return this.employerService.findAll(getListDto);
   }
 
   @Get(':id')
@@ -29,7 +32,7 @@ export class EmployersController {
     status: 200,
     type: Employer,
   })
-  async getById(@Param() idDto: IdDto) {
-    return this.employerService.getById(idDto.id);
+  async findById(@Param() idDto: IdDto) {
+    return this.employerService.findById(idDto.id);
   }
 }

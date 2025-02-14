@@ -17,11 +17,11 @@ export class EmployersService {
     return newEmployer.save();
   }
 
-  getById(id: string) {
+  findById(id: string) {
     return this.employerModel.findById(id);
   }
 
-  getAll(getListDto: GetListDto) {
+  findAll(getListDto: GetListDto) {
     return paginate(
       this.employerModel,
       {
