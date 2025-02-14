@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { EmployersModule } from './modules/employers/employers.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { EmployersModule } from './modules/employers/employers.module';
         },
       },
     ),
+    ReviewsModule,
     EmployersModule,
   ],
   controllers: [AppController],
