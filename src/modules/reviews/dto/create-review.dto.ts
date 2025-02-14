@@ -25,5 +25,5 @@ export class CreateReviewDto {
   })
   @IsString()
   @IsNotEmpty()
-  employerId: Rating;
+  employerId: string;
 }

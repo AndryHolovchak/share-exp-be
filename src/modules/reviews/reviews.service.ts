@@ -15,7 +15,11 @@ export class ReviewsService {
     return newReview.save();
   }
 
-  findAll(paginationDto: PaginationDto) {
+  findAll(paginationDto: PaginationDto, employerId?: string) {
+    if (employerId) {
+      return paginate(this.reviewModel, { employerId }, paginationDto);
+    }
+
     return paginate(this.reviewModel, {}, paginationDto);
   }
 }
