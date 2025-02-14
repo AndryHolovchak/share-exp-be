@@ -1,15 +1,10 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import {
-  Review,
-  ReviewSchema,
-} from '../../common/database/schemas/review.schema';
+import { ReviewModel } from '../../common/database/models/review.model';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Review.name, schema: ReviewSchema }]),
-  ],
+  imports: [ReviewModel],
   providers: [],
   controllers: [],
+  exports: [ReviewModel],
 })
 export class ReviewsModule {}

@@ -18,4 +18,4 @@ export class Review {
   employer_id: Rating;
 }
 
-export const ReviewSchema = SchemaFactory.createForClass(ReviewSchema);
+export const ReviewSchema = SchemaFactory.createForClass(Review);
