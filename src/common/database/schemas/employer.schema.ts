@@ -25,5 +25,3 @@ export class Employer {
 }
 
 export const EmployerSchema = SchemaFactory.createForClass(Employer);
-
-export type EmployerDocument = Employer & Document;
