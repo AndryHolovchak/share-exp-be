@@ -51,7 +51,6 @@ export class EmployersController {
     @Param('id') employerId: string,
     @Query() paginationDto: PaginationDto,
   ) {
-    console.log(employerId);
     return this.reviewService.findAll(paginationDto, employerId);
   }
 
