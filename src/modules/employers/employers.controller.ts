@@ -1,13 +1,24 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { EmployersService } from './employers.service';
 import { CreateEmployerDto } from './dto/create-employer.dto';
-import { GetListDto, IdDto, PaginationDto } from '../../common/dto/common.dto';
+import { GetListDto, PaginationDto } from '../../common/dto/common.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { Employer } from '../../common/database/schemas/employer.schema';
 import { PaginationOutputEntity } from '../../common/entities/pagination-output.entity';
 import { Review } from '../../common/database/schemas/review.schema';
 import { CreateEmployerReviewDto } from './dto/create-employer-review.dto';
 import { ReviewsService } from '../reviews/reviews.service';
+import { AuthGuard } from '../../common/guards/auth.guard';
+import { GetUser } from '../../common/decorators/get-user-decorator';
+import { User } from '../../common/database/schemas/user.schema';
 
 @Controller('employers')
 export class EmployersController {
@@ -59,7 +70,9 @@ export class EmployersController {
     status: 201,
     type: Review,
   })
+  @UseGuards(AuthGuard)
   async createReview(
+    @GetUser() user: User,
     @Param('id') employerId: string,
     @Body() createReviewDto: CreateEmployerReviewDto,
   ) {
