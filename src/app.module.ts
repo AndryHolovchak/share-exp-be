@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { EmployersModule } from './modules/employers/employers.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
         },
       },
     ),
+    AuthModule,
+    UsersModule,
     ReviewsModule,
     EmployersModule,
   ],
