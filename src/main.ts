@@ -22,6 +22,13 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
 
+  app.enableCors({
+    origin: 'http://localhost:3000', // Дозволяємо запити з Next.js
+    methods: 'GET,POST,PUT,DELETE,OPTIONS', // Які методи дозволені
+    allowedHeaders: 'Content-Type,Authorization', // Дозволені заголовки
+    credentials: true, // Якщо треба передавати кукі
+  });
+
   await app.listen(process.env.PORT ?? 3001);
 }
 

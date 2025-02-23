@@ -40,7 +40,7 @@ export class IdDto {
   @ApiProperty({
     example: '67ad10313aca914f3a549f64',
     description: 'record id',
-    required: false,
+    required: true,
   })
   @Type(() => String)
   readonly id: string;

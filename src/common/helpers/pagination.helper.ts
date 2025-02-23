@@ -11,7 +11,10 @@ export async function paginate<Entity>(
 
   const [count, rows] = await Promise.all([
     model.countDocuments(filter).exec(),
-    model.find(filter, {}, { skip: (page - 1) * limit, limit }).exec(),
+    model
+      .find(filter, {}, { skip: (page - 1) * limit, limit })
+      .sort({ createdAt: -1 })
+      .exec(),
   ]);
 
   return { rows, count };

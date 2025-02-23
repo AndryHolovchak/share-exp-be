@@ -38,8 +38,8 @@ export class EmployersController {
     status: 200,
     type: Employer,
   })
-  async findById(@Param() idDto: IdDto) {
-    return this.employerService.findById(idDto.id);
+  async findById(@Param('id') id: string) {
+    return this.employerService.findById(id);
   }
 
   @Get(':id/reviews')
