@@ -1,6 +1,4 @@
-// employer.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
 import { Rating } from '../../types/review.types';
 
 @Schema({ timestamps: true })
@@ -25,5 +23,3 @@ export class Employer {
 }
 
 export const EmployerSchema = SchemaFactory.createForClass(Employer);
-
-export type EmployerDocument = Employer & Document;
