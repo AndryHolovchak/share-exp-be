@@ -22,12 +22,12 @@ export class EmployersService {
   }
 
   findAll(getListDto: GetListDto) {
-    return paginate(
-      this.employerModel,
-      {
+    return paginate({
+      model: this.employerModel,
+      filter: {
         name: { $regex: getListDto.search ?? '', $options: 'i' },
       },
-      getListDto,
-    );
+      pagination: getListDto,
+    });
   }
 }

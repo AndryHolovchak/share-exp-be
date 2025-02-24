@@ -13,11 +13,12 @@ export class UsersService {
     providerId,
     name,
     email,
+    picture,
   }: AuthPayload): Promise<User> {
     let user = await this.userModel.findOne({ provider, providerId });
 
     if (!user) {
-      user = new this.userModel({ provider, providerId, email, name });
+      user = new this.userModel({ provider, providerId, email, name, picture });
       await user.save();
     }
 

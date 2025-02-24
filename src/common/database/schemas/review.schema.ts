@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Rating, RatingEnum } from '../../types/review.types';
-import { Schema as MongooseSchema } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
+import { TUserBase } from '../../types/user.types';
 
 @Schema({ timestamps: true })
 export class Review {
@@ -16,6 +17,9 @@ export class Review {
     type: MongooseSchema.Types.ObjectId,
   })
   employerId: MongooseSchema.Types.ObjectId;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true }) // Reference to User
+  author: Types.ObjectId | TUserBase;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);

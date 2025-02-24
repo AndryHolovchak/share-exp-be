@@ -1,5 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { CreateReviewDto } from './dto/create-review.dto';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { ApiResponse } from '@nestjs/swagger';
 import { PaginationOutputEntity } from '../../common/entities/pagination-output.entity';
@@ -17,10 +16,5 @@ export class ReviewsController {
   })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.reviewService.findAll(paginationDto);
-  }
-
-  @Post()
-  create(@Body() createReviewDto: CreateReviewDto) {
-    return this.reviewService.create(createReviewDto);
   }
 }

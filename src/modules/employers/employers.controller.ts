@@ -78,6 +78,7 @@ export class EmployersController {
   ) {
     return this.reviewService.create({
       employerId,
+      author: user._id,
       ...createReviewDto,
     });
   }
