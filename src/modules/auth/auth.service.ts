@@ -33,6 +33,7 @@ export class AuthService {
       providerId: payload.sub,
       name: payload.name,
       email: payload.email,
+      picture: payload.picture,
     });
   }
 }

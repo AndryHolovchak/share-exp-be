@@ -7,4 +7,5 @@ export interface AuthPayload {
   providerId: string;
   email?: string;
   name?: string;
+  picture?: string;
 }
