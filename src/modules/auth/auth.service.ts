@@ -19,7 +19,6 @@ export class AuthService {
       case 'https://accounts.google.com': {
         const ticket = await googleClient.verifyIdToken({
           idToken,
-          audience: process.env.GOOGLE_CLIENT_ID,
         });
         payload = ticket.getPayload()!;
         provider = EAuthProvider.GOOGLE;
