@@ -1,3 +1,5 @@
-import { User } from '../database/schemas/user.schema';
-
-export type TUserBase = Pick<User, 'name' | 'email' | '_id'>;
+export interface ICreateUserRequest {
+  name: string;
+  email?: string;
+  picture?: string;
+}
