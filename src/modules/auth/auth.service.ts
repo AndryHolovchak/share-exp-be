@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
-import { UsersService } from '../users/users.service';
 import { EAuthProvider } from '../../common/types/auth.types';
 import { jwtDecode } from 'jwt-decode';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Auth } from '../../common/database/schemas/auth.schema';
+import { User } from '../../common/database/schemas/user.schema';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -13,7 +13,7 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 export class AuthService {
   constructor(
     @InjectModel(Auth.name) private authModel: Model<Auth>,
-    private userService: UsersService,
+    @InjectModel(User.name) private userModel: Model<User>,
   ) {}
 
   async verifyAndAuthenticateUser(idToken: string) {
@@ -44,13 +44,14 @@ export class AuthService {
     console.log({ userAuth });
 
     if (userAuth) {
-      return this.userService.findById(userAuth.user);
+      return this.userModel.findById(userAuth.user).exec();
     } else {
-      const user = await this.userService.createUser({
+      const user = new this.userModel({
         name: payload.name || '',
         email: payload.email,
         picture: payload.picture,
       });
+      await user.save();
 
       await this.authModel.create({
         provider,

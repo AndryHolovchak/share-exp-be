@@ -10,7 +10,7 @@ export const GetUser = createParamDecorator(
     const { user } = ctx.switchToHttp().getRequest<{ user?: User }>();
 
     if (!user) {
-      throw new UnauthorizedException('User is not set');
+      throw new UnauthorizedException('No user found in request');
     }
 
     return user;

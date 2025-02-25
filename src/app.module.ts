@@ -5,7 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { EmployersModule } from './modules/employers/employers.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { UsersModule } from './modules/users/users.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -19,7 +19,7 @@ import { UsersModule } from './modules/users/users.module';
       },
     ),
     AuthModule,
-    UsersModule,
+    UserModule,
     ReviewsModule,
     EmployersModule,
   ],
