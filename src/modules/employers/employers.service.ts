@@ -21,7 +21,7 @@ export class EmployersService {
     return newEmployer.save();
   }
 
-  async findById(id: string) {
+  async findById(id: string): Promise<IPopulatedEmployer | null> {
     const [employer, reviewCount] = await Promise.all([
       this.employerModel.findById(id).lean(),
       this.reviewService.getReviewCountsForEmployers([
@@ -29,10 +29,12 @@ export class EmployersService {
       ]),
     ]);
 
-    return {
-      ...employer,
-      totalReviews: reviewCount[id.toString()] ?? 0,
-    };
+    return (
+      employer && {
+        ...employer,
+        totalReviews: reviewCount[id.toString()] ?? 0,
+      }
+    );
   }
 
   async findAll(
