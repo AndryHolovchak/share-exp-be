@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Employer } from '../../common/database/schemas/employer.schema';
-import { Model } from 'mongoose';
+import { Model, RootFilterQuery } from 'mongoose';
 import { CreateEmployerDto } from './dto/create-employer.dto';
 import { GetListDto } from '../../common/dto/common.dto';
-import { paginate } from '../../common/helpers/pagination.helper';
+import { getPaginationOptions } from '../../common/helpers/pagination.helper';
 
 @Injectable()
 export class EmployersService {
@@ -21,13 +21,16 @@ export class EmployersService {
     return this.employerModel.findById(id);
   }
 
-  findAll(getListDto: GetListDto) {
-    return paginate({
-      model: this.employerModel,
-      filter: {
-        name: { $regex: getListDto.search ?? '', $options: 'i' },
-      },
-      pagination: getListDto,
-    });
+  async findAll(getListDto: GetListDto) {
+    const filters: RootFilterQuery<Employer> = {
+      name: { $regex: getListDto.search ?? '', $options: 'i' },
+    };
+
+    const [count, rows] = await Promise.all([
+      this.employerModel.countDocuments(filters),
+      this.employerModel.find(filters, {}, getPaginationOptions(getListDto)),
+    ]);
+
+    return { rows, count };
   }
 }
