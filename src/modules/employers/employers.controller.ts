@@ -73,11 +73,11 @@ export class EmployersController {
   @UseGuards(AuthGuard)
   async createReview(
     @GetUser() user: User,
-    @Param('id') employerId: string,
+    @Param('id') employer: string,
     @Body() createReviewDto: CreateEmployerReviewDto,
   ) {
     return this.reviewService.create({
-      employerId,
+      employer,
       author: user._id,
       ...createReviewDto,
     });

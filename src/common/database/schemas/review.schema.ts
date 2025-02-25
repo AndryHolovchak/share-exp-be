@@ -15,7 +15,7 @@ export class Review {
     ref: 'Employer',
     type: MongooseSchema.Types.ObjectId,
   })
-  employerId: MongooseSchema.Types.ObjectId;
+  employer: MongooseSchema.Types.ObjectId;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true }) // Reference to User
   author: Types.ObjectId;
