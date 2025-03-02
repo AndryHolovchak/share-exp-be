@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 import { Rating, RatingEnum } from '../../../common/types/review.types';
 
 export class CreateReviewDto {
@@ -27,4 +33,11 @@ export class CreateReviewDto {
   @IsString()
   @IsNotEmpty()
   employer: string;
+
+  @ApiProperty({
+    example: 'true',
+    description: 'Is the review anonymous?',
+  })
+  @IsBoolean()
+  anonymous: boolean;
 }
