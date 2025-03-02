@@ -34,7 +34,11 @@ export class ReviewsService {
     };
   }
 
-  async findAll(paginationDto: PaginationDto, employer?: string) {
+  async findAll(
+    paginationDto: PaginationDto,
+    employer?: string,
+    userId?: Types.ObjectId,
+  ) {
     const filters: RootFilterQuery<Review> = employer ? { employer } : {};
 
     const [count, rows] = await Promise.all([
@@ -48,7 +52,10 @@ export class ReviewsService {
         .lean<IFullReview[]>(),
     ]);
 
-    return { count, rows: rows.map((review) => this.sanitizeReview(review)) };
+    return {
+      count,
+      rows: rows.map((review) => this.sanitizeReview(review, userId)),
+    };
   }
 
   async findByUser(paginationDto: PaginationDto, userId: Types.ObjectId) {

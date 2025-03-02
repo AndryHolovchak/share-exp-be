@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Query,
+  SetMetadata,
   UseGuards,
 } from '@nestjs/common';
 import { EmployersService } from './employers.service';
@@ -16,7 +17,7 @@ import { PaginationOutputEntity } from '../../common/entities/pagination-output.
 import { Review } from '../../common/database/schemas/review.schema';
 import { CreateEmployerReviewDto } from './dto/create-employer-review.dto';
 import { ReviewsService } from '../reviews/reviews.service';
-import { AuthGuard } from '../../common/guards/auth.guard';
+import { AuthGuard, NO_AUTH_METADATA } from '../../common/guards/auth.guard';
 import { GetUser } from '../../common/decorators/get-user-decorator';
 import { User } from '../../common/database/schemas/user.schema';
 
@@ -58,11 +59,14 @@ export class EmployersController {
     status: 200,
     type: PaginationOutputEntity<Review>,
   })
+  @UseGuards(AuthGuard)
+  @SetMetadata(NO_AUTH_METADATA, true)
   async findAllReviews(
     @Param('id') employerId: string,
     @Query() paginationDto: PaginationDto,
+    @GetUser() user?: User,
   ) {
-    return this.reviewService.findAll(paginationDto, employerId);
+    return this.reviewService.findAll(paginationDto, employerId, user?._id);
   }
 
   @Post(':id/reviews')
