@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Employer } from '../../common/database/schemas/employer.schema';
-import mongoose, { Model, RootFilterQuery } from 'mongoose';
+import { Model, RootFilterQuery } from 'mongoose';
 import { CreateEmployerDto } from './dto/create-employer.dto';
 import { GetListDto } from '../../common/dto/common.dto';
 import { getPaginationOptions } from '../../common/helpers/pagination.helper';
 import { ReviewsService } from '../reviews/reviews.service';
 import { PaginationOutputEntity } from '../../common/entities/pagination-output.entity';
 import { IPopulatedEmployer } from '../../common/interfaces/employer.interface';
+import { ICreateReviewRequest } from '../../common/interfaces/review.interface';
 
 @Injectable()
 export class EmployersService {
@@ -22,19 +23,7 @@ export class EmployersService {
   }
 
   async findById(id: string): Promise<IPopulatedEmployer | null> {
-    const [employer, reviewCount] = await Promise.all([
-      this.employerModel.findById(id).lean(),
-      this.reviewService.getReviewCountsForEmployers([
-        new mongoose.Types.ObjectId(id),
-      ]),
-    ]);
-
-    return (
-      employer && {
-        ...employer,
-        totalReviews: reviewCount[id.toString()] ?? 0,
-      }
-    );
+    return this.employerModel.findById(id).lean();
   }
 
   async findAll(
@@ -51,16 +40,40 @@ export class EmployersService {
         .lean(),
     ]);
 
-    const reviewsCount = await this.reviewService.getReviewCountsForEmployers(
-      rows.map((row) => row._id),
-    );
-
     return {
       count,
-      rows: rows.map((row) => ({
-        ...row,
-        totalReviews: reviewsCount[row._id.toString()] ?? 0,
-      })),
+      rows,
     };
+  }
+
+  async addReview(request: ICreateReviewRequest) {
+    const [review] = await Promise.all([
+      this.reviewService.create(request),
+
+      this.employerModel.updateOne({ _id: request.employer }, [
+        {
+          $set: {
+            totalReviews: { $add: ['$totalReviews', 1] },
+            averageRating: {
+              $round: [
+                {
+                  $divide: [
+                    {
+                      $add: [
+                        { $multiply: ['$averageRating', '$totalReviews'] },
+                        request.rating,
+                      ],
+                    },
+                    { $add: ['$totalReviews', 1] },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      ]),
+    ]);
+
+    return review;
   }
 }

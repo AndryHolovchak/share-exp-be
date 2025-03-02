@@ -6,18 +6,16 @@ import { EmployersModule } from './modules/employers/employers.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
+import * as process from 'node:process';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      'mongodb://mongo:xerLwPvqPwJOVHuASVxlVclJoUqbsTTx@trolley.proxy.rlwy.net:40616',
-      {
-        auth: {
-          username: 'mongo',
-          password: 'xerLwPvqPwJOVHuASVxlVclJoUqbsTTx',
-        },
+    MongooseModule.forRoot(process.env.MONGO_URI!, {
+      auth: {
+        username: process.env.MONGO_USER!,
+        password: process.env.MONGO_PASSWORD!,
       },
-    ),
+    }),
     AuthModule,
     UserModule,
     ReviewsModule,

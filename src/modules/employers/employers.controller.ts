@@ -76,7 +76,7 @@ export class EmployersController {
     @Param('id') employer: string,
     @Body() createReviewDto: CreateEmployerReviewDto,
   ) {
-    return this.reviewService.create({
+    return this.employerService.addReview({
       employer,
       author: user._id,
       ...createReviewDto,

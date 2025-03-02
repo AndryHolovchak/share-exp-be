@@ -49,23 +49,4 @@ export class ReviewsService {
 
     return { rows, count };
   }
-
-  async getReviewCountsForEmployers(
-    employerIds: Types.ObjectId[],
-  ): Promise<Record<string, number>> {
-    const reviewCounts: { _id: string; count: number }[] =
-      await this.reviewModel.aggregate([
-        { $match: { employer: { $in: employerIds } } }, // Filter by employer, not employer
-        { $group: { _id: '$employer', count: { $sum: 1 } } }, // Group by employer and count reviews
-      ]);
-
-    // Convert results into an easy-to-use object
-    return reviewCounts.reduce(
-      (acc, item) => {
-        acc[item._id] = item.count;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-  }
 }

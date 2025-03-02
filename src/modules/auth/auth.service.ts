@@ -8,7 +8,6 @@ import { Auth } from '../../common/database/schemas/auth.schema';
 import { User } from '../../common/database/schemas/user.schema';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
 @Injectable()
 export class AuthService {
   constructor(
