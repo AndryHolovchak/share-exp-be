@@ -7,6 +7,7 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import * as process from 'node:process';
+import { ReviewVotesModule } from './modules/review-votes/review-votes.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import * as process from 'node:process';
     UserModule,
     ReviewsModule,
     EmployersModule,
+    ReviewVotesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
