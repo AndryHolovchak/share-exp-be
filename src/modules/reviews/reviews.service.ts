@@ -34,17 +34,16 @@ export class ReviewsService {
     review: IFullReview,
     currentUser?: Types.ObjectId,
   ): Promise<IReviewResponse> {
-    const currentUserVote = currentUser
-      ? await this.reviewVotesService.findUserVoteForReview(
-          currentUser._id.toString(),
-          review._id,
-        )
-      : null;
-
+    const currentUserVote =
+      currentUser &&
+      (await this.reviewVotesService.findUserVoteForReview(
+        currentUser._id.toString(),
+        review._id,
+      ));
     return {
       ...review,
       author: review.anonymous ? null : review.author,
-      currentUserVote,
+      currentUserVote: currentUserVote ? currentUserVote.vote : null,
       isCurrentUserReview:
         !!currentUser &&
         review.author._id.toString() === currentUser.toString(),
@@ -62,7 +61,7 @@ export class ReviewsService {
       this.reviewModel.countDocuments(filters),
       this.reviewModel
         .find(filters, employer ? { employer: 0 } : {}, {
-          sort: { updatedAt: -1 },
+          sort: { createdAt: -1 },
           ...getPaginationOptions(paginationDto),
         })
         .populate<{ author: User }>('author')
@@ -88,15 +87,19 @@ export class ReviewsService {
         .find(
           filters,
           {},
-          { sort: { updatedAt: -1 }, ...getPaginationOptions(paginationDto) },
+          { sort: { createdAt: -1 }, ...getPaginationOptions(paginationDto) },
         )
         .populate<{ author: User; employer: Employer }>(['author', 'employer'])
         .lean<IFullReview[]>(),
     ]);
 
+    const reviewResponses = await Promise.all(
+      rows.map((review) => this.createReviewResponse(review, userId)),
+    );
+
     return {
       count,
-      rows: rows.map((review) => this.createReviewResponse(review, userId)),
+      rows: reviewResponses,
     };
   }
 

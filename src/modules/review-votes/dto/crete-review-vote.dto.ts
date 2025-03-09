@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
 import { Vote, VoteEnum } from '../../../common/types/vote.types';
 
 export class ReviewVoteDto {
