@@ -1,2 +1,2 @@
-export const VoteEnum = ['upvote', 'downvote'] as const;
+export const VoteEnum = [1, -1] as const;
 export type Vote = (typeof VoteEnum)[number];

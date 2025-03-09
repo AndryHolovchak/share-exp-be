@@ -22,6 +22,9 @@ export class Review {
 
   @Prop({ required: true })
   anonymous: boolean;
+
+  @Prop({ type: Number, default: 0 }) // Overall vote rating
+  voteRating: number;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);

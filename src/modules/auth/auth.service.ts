@@ -40,8 +40,6 @@ export class AuthService {
       })
       .exec();
 
-    console.log({ userAuth });
-
     if (userAuth) {
       return this.userModel.findById(userAuth.user).exec();
     } else {

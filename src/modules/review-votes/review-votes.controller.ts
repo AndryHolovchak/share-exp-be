@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   HttpStatus,
+  Param,
   Put,
   Res,
   UseGuards,
@@ -18,7 +19,7 @@ import { Response } from 'express';
 export class ReviewVotesController {
   constructor(private reviewVotesService: ReviewVotesService) {}
 
-  @Put('')
+  @Put(':reviewId')
   @ApiResponse({
     status: 201,
     type: ReviewVote,
@@ -30,10 +31,12 @@ export class ReviewVotesController {
   async updateVote(
     @Res({ passthrough: true }) res: Response,
     @GetUser() user: User,
+    @Param('reviewId') reviewId: string,
     @Body() reviewVoteDto: ReviewVoteDto,
   ) {
     const { vote } = await this.reviewVotesService.updateVote(
       user._id.toString(),
+      reviewId,
       reviewVoteDto,
     );
 

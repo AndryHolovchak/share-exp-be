@@ -11,23 +11,40 @@ import {
 import { getPaginationOptions } from '../../common/helpers/pagination.helper';
 import { User } from '../../common/database/schemas/user.schema';
 import { Employer } from '../../common/database/schemas/employer.schema';
+import { ReviewVotesService } from '../review-votes/review-votes.service';
+import {
+  IReviewVoteUpdateEventPayload,
+  REVIEW_VOTE_UPDATE_EVENT,
+} from '../../common/events/review-vote.events';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ReviewsService {
-  constructor(@InjectModel(Review.name) private reviewModel: Model<Review>) {}
+  constructor(
+    @InjectModel(Review.name) private reviewModel: Model<Review>,
+    private reviewVotesService: ReviewVotesService,
+  ) {}
 
   create(request: ICreateReviewRequest) {
     const newReview = new this.reviewModel(request);
     return newReview.save();
   }
 
-  private sanitizeReview(
+  private async createReviewResponse(
     review: IFullReview,
     currentUser?: Types.ObjectId,
-  ): IReviewResponse {
+  ): Promise<IReviewResponse> {
+    const currentUserVote = currentUser
+      ? await this.reviewVotesService.findUserVoteForReview(
+          currentUser._id.toString(),
+          review._id,
+        )
+      : null;
+
     return {
       ...review,
       author: review.anonymous ? null : review.author,
+      currentUserVote,
       isCurrentUserReview:
         !!currentUser &&
         review.author._id.toString() === currentUser.toString(),
@@ -52,9 +69,13 @@ export class ReviewsService {
         .lean<IFullReview[]>(),
     ]);
 
+    const reviewResponses = await Promise.all(
+      rows.map((review) => this.createReviewResponse(review, userId)),
+    );
+
     return {
       count,
-      rows: rows.map((review) => this.sanitizeReview(review, userId)),
+      rows: reviewResponses,
     };
   }
 
@@ -75,7 +96,20 @@ export class ReviewsService {
 
     return {
       count,
-      rows: rows.map((review) => this.sanitizeReview(review, userId)),
+      rows: rows.map((review) => this.createReviewResponse(review, userId)),
     };
+  }
+
+  @OnEvent(REVIEW_VOTE_UPDATE_EVENT)
+  async updateReviewVoteRating(payload: IReviewVoteUpdateEventPayload) {
+    const { reviewId } = payload;
+
+    const votes = await this.reviewVotesService.findReviewVotes(reviewId);
+    const voteRating = votes.reduce((sum, v) => sum + v.vote, 0);
+
+    await this.reviewModel.updateOne(
+      { _id: reviewId },
+      { $set: { voteRating } },
+    );
   }
 }

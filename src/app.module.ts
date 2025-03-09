@@ -1,4 +1,3 @@
-import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -9,8 +8,12 @@ import { UserModule } from './modules/user/user.module';
 import * as process from 'node:process';
 import { ReviewVotesModule } from './modules/review-votes/review-votes.module';
 
+import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     MongooseModule.forRoot(process.env.MONGO_URI!, {
       auth: {
         username: process.env.MONGO_USER!,
