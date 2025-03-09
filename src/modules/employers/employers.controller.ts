@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { EmployersService } from './employers.service';
 import { CreateEmployerDto } from './dto/create-employer.dto';
-import { GetListDto, PaginationDto } from '../../common/dto/common.dto';
+import { GetListDto, IdDto, PaginationDto } from '../../common/dto/common.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { Employer } from '../../common/database/schemas/employer.schema';
 import { PaginationOutputEntity } from '../../common/entities/pagination-output.entity';
@@ -45,15 +45,6 @@ export class EmployersController {
     return this.employerService.findAll(getListDto);
   }
 
-  @Get(':id')
-  @ApiResponse({
-    status: 200,
-    type: Employer,
-  })
-  async findById(@Param('id') id: string) {
-    return this.employerService.findById(id);
-  }
-
   @Get(':id/reviews')
   @ApiResponse({
     status: 200,
@@ -62,11 +53,11 @@ export class EmployersController {
   @UseGuards(AuthGuard)
   @SetMetadata(NO_AUTH_METADATA, true)
   async findAllReviews(
-    @Param('id') employerId: string,
+    @Param() { id }: IdDto,
     @Query() paginationDto: PaginationDto,
     @GetUser() user?: User,
   ) {
-    return this.reviewService.findAll(paginationDto, employerId, user?._id);
+    return this.employerService.findReviews(paginationDto, id, user?._id);
   }
 
   @Post(':id/reviews')
@@ -77,11 +68,11 @@ export class EmployersController {
   @UseGuards(AuthGuard)
   async createReview(
     @GetUser() user: User,
-    @Param('id') employer: string,
+    @Param() { id }: IdDto,
     @Body() createReviewDto: CreateEmployerReviewDto,
   ) {
     return this.employerService.addReview({
-      employer,
+      employer: id,
       author: user._id,
       ...createReviewDto,
     });

@@ -15,11 +15,12 @@ import { GetUser } from '../../common/decorators/get-user-decorator';
 import { User } from '../../common/database/schemas/user.schema';
 import { ReviewVoteDto } from './dto/crete-review-vote.dto';
 import { Response } from 'express';
+import { IdDto } from '../../common/dto/common.dto';
 @Controller('review-votes')
 export class ReviewVotesController {
   constructor(private reviewVotesService: ReviewVotesService) {}
 
-  @Put(':reviewId')
+  @Put(':id')
   @ApiResponse({
     status: 201,
     type: ReviewVote,
@@ -31,7 +32,7 @@ export class ReviewVotesController {
   async updateVote(
     @Res({ passthrough: true }) res: Response,
     @GetUser() user: User,
-    @Param('reviewId') reviewId: string,
+    @Param() { id: reviewId }: IdDto,
     @Body() reviewVoteDto: ReviewVoteDto,
   ) {
     const { vote } = await this.reviewVotesService.updateVote(

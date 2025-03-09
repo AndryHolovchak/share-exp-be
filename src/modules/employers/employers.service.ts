@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Employer } from '../../common/database/schemas/employer.schema';
-import { Model, RootFilterQuery } from 'mongoose';
+import { Model, RootFilterQuery, Types } from 'mongoose';
 import { CreateEmployerDto } from './dto/create-employer.dto';
-import { GetListDto } from '../../common/dto/common.dto';
+import { GetListDto, PaginationDto } from '../../common/dto/common.dto';
 import { getPaginationOptions } from '../../common/helpers/pagination.helper';
 import { ReviewsService } from '../reviews/reviews.service';
 import { PaginationOutputEntity } from '../../common/entities/pagination-output.entity';
@@ -20,10 +20,6 @@ export class EmployersService {
   create(createEmployerDto: CreateEmployerDto) {
     const newEmployer = new this.employerModel(createEmployerDto);
     return newEmployer.save();
-  }
-
-  async findById(id: string): Promise<IPopulatedEmployer | null> {
-    return this.employerModel.findById(id).lean();
   }
 
   async findAll(
@@ -46,7 +42,27 @@ export class EmployersService {
     };
   }
 
+  private async validateEmployer(id: string) {
+    const employer = await this.employerModel.exists({ _id: id });
+
+    if (!employer) {
+      throw new BadRequestException('Employer not found');
+    }
+  }
+
+  async findReviews(
+    paginationDto: PaginationDto,
+    employerId: string,
+    userId?: Types.ObjectId,
+  ) {
+    await this.validateEmployer(employerId);
+
+    return this.reviewService.findAll(paginationDto, employerId, userId);
+  }
+
   async addReview(request: ICreateReviewRequest) {
+    await this.validateEmployer(request.employer);
+
     const [review] = await Promise.all([
       this.reviewService.create(request),
 

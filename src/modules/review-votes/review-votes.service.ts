@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -9,11 +9,13 @@ import {
   IReviewVoteUpdateEventPayload,
   REVIEW_VOTE_UPDATE_EVENT,
 } from '../../common/events/review-vote.events';
+import { Review } from '../../common/database/schemas/review.schema';
 
 @Injectable()
 export class ReviewVotesService {
   constructor(
     @InjectModel(ReviewVote.name) private reviewVoteModel: Model<ReviewVote>,
+    @InjectModel(Review.name) private reviewModel: Model<Review>,
     private eventEmitter: EventEmitter2,
   ) {}
 
@@ -32,6 +34,12 @@ export class ReviewVotesService {
 
   async updateVote(userId: string, reviewId: string, { vote }: ReviewVoteDto) {
     let result: ReviewVote | null = null;
+
+    const review = await this.reviewModel.exists({ _id: reviewId });
+
+    if (!review) {
+      throw new BadRequestException('Review not found');
+    }
 
     if (!vote) {
       await this.reviewVoteModel.deleteOne({

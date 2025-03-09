@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsOptional, Min } from 'class-validator';
+import { IsInt, IsMongoId, IsOptional, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class PaginationDto {
@@ -37,11 +37,6 @@ export class GetListDto extends PaginationDto {
 }
 
 export class IdDto {
-  @ApiProperty({
-    example: '67ad10313aca914f3a549f64',
-    description: 'record id',
-    required: true,
-  })
-  @Type(() => String)
+  @IsMongoId()
   readonly id: string;
 }
