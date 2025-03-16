@@ -16,17 +16,13 @@ import { Employer } from '../../common/database/schemas/employer.schema';
 import { PaginationOutputEntity } from '../../common/entities/pagination-output.entity';
 import { Review } from '../../common/database/schemas/review.schema';
 import { CreateEmployerReviewDto } from './dto/create-employer-review.dto';
-import { ReviewsService } from '../reviews/reviews.service';
 import { AuthGuard, NO_AUTH_METADATA } from '../../common/guards/auth.guard';
 import { GetUser } from '../../common/decorators/get-user-decorator';
 import { User } from '../../common/database/schemas/user.schema';
 
 @Controller('employers')
 export class EmployersController {
-  constructor(
-    private employerService: EmployersService,
-    private reviewService: ReviewsService,
-  ) {}
+  constructor(private employerService: EmployersService) {}
   @Post()
   @ApiResponse({
     status: 201,
@@ -34,6 +30,15 @@ export class EmployersController {
   })
   create(@Body() createEmployerDto: CreateEmployerDto) {
     return this.employerService.create(createEmployerDto);
+  }
+
+  @Get(':id')
+  @ApiResponse({
+    status: 200,
+    type: Employer,
+  })
+  async findById(@Param('id') id: string) {
+    return this.employerService.findById(id);
   }
 
   @Get()

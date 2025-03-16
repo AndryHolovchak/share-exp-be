@@ -22,6 +22,10 @@ export class EmployersService {
     return newEmployer.save();
   }
 
+  async findById(id: string): Promise<IPopulatedEmployer | null> {
+    return this.employerModel.findById(id).lean();
+  }
+
   async findAll(
     getListDto: GetListDto,
   ): Promise<PaginationOutputEntity<IPopulatedEmployer>> {
