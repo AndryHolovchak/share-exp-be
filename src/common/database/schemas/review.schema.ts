@@ -4,9 +4,6 @@ import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Review {
-  @Prop({ required: true })
-  content: string;
-
   @Prop({ required: true, enum: RatingEnum })
   rating: Rating;
 
@@ -25,6 +22,9 @@ export class Review {
 
   @Prop({ type: Number, default: 0 }) // Overall vote rating
   voteRating: number;
+
+  @Prop()
+  content?: string;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);

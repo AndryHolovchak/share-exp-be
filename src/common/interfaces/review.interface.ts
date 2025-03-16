@@ -3,7 +3,6 @@ import { Types } from 'mongoose';
 import { Rating } from '../types/review.types';
 import { Employer } from '../database/schemas/employer.schema';
 import { User } from '../database/schemas/user.schema';
-import { ReviewVote } from '../database/schemas/review-vote.schema';
 import { Vote } from '../types/vote.types';
 
 export interface ICreateReviewRequest extends CreateReviewDto {
@@ -12,7 +11,7 @@ export interface ICreateReviewRequest extends CreateReviewDto {
 
 export interface IFullReview {
   _id: string;
-  content: string;
+  content?: string;
   rating: Rating;
   employer: Employer;
   author: User;

@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   MaxLength,
 } from 'class-validator';
@@ -22,9 +23,9 @@ export class CreateReviewDto {
     description: 'The content of the review',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(2048)
-  content: string;
+  content?: string;
 
   @ApiProperty({
     example: '65c8f9e2a1d5f2001e4f0a56',
