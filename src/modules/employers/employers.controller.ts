@@ -2,8 +2,10 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   Post,
+  Put,
   Query,
   SetMetadata,
   UseGuards,
@@ -15,10 +17,10 @@ import { ApiResponse } from '@nestjs/swagger';
 import { Employer } from '../../common/database/schemas/employer.schema';
 import { PaginationOutputEntity } from '../../common/entities/pagination-output.entity';
 import { Review } from '../../common/database/schemas/review.schema';
-import { CreateEmployerReviewDto } from './dto/create-employer-review.dto';
 import { AuthGuard, NO_AUTH_METADATA } from '../../common/guards/auth.guard';
 import { GetUser } from '../../common/decorators/get-user-decorator';
 import { User } from '../../common/database/schemas/user.schema';
+import { ReviewContentDto } from '../reviews/dto/review-content.dto';
 
 @Controller('employers')
 export class EmployersController {
@@ -38,7 +40,11 @@ export class EmployersController {
     type: Employer,
   })
   async findById(@Param('id') id: string) {
-    return this.employerService.findById(id);
+    const employer = await this.employerService.findById(id);
+
+    if (employer) return employer;
+
+    throw new NotFoundException('Employee not found');
   }
 
   @Get()
@@ -74,12 +80,29 @@ export class EmployersController {
   async createReview(
     @GetUser() user: User,
     @Param() { id }: IdDto,
-    @Body() createReviewDto: CreateEmployerReviewDto,
+    @Body() reviewContentDto: ReviewContentDto,
   ) {
     return this.employerService.addReview({
       employer: id,
       author: user._id,
-      ...createReviewDto,
+      ...reviewContentDto,
+    });
+  }
+
+  @Put('reviews/:id')
+  @ApiResponse({
+    status: 200,
+    type: Review,
+  })
+  @UseGuards(AuthGuard)
+  async updateReview(
+    @GetUser() user: User,
+    @Param() { id }: IdDto,
+    @Body() reviewContentDto: ReviewContentDto,
+  ) {
+    return this.employerService.updateReview(user._id, {
+      review: id,
+      ...reviewContentDto,
     });
   }
 }

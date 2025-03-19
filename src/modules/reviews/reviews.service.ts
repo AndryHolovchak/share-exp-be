@@ -7,6 +7,7 @@ import {
   ICreateReviewRequest,
   IFullReview,
   IReviewResponse,
+  IUpdateReviewRequest,
 } from '../../common/interfaces/review.interface';
 import { getPaginationOptions } from '../../common/helpers/pagination.helper';
 import { User } from '../../common/database/schemas/user.schema';
@@ -28,6 +29,10 @@ export class ReviewsService {
   create(request: ICreateReviewRequest) {
     const newReview = new this.reviewModel(request);
     return newReview.save();
+  }
+
+  update({ review, ...content }: IUpdateReviewRequest) {
+    return this.reviewModel.findByIdAndUpdate(review, content, { new: true });
   }
 
   private async createReviewResponse(
@@ -101,6 +106,10 @@ export class ReviewsService {
       count,
       rows: reviewResponses,
     };
+  }
+
+  findById(id: Types.ObjectId | string) {
+    return this.reviewModel.findById(id);
   }
 
   @OnEvent(REVIEW_VOTE_UPDATE_EVENT)

@@ -1,12 +1,17 @@
-import { CreateReviewDto } from '../../modules/reviews/dto/create-review.dto';
 import { Types } from 'mongoose';
 import { Rating } from '../types/review.types';
 import { Employer } from '../database/schemas/employer.schema';
 import { User } from '../database/schemas/user.schema';
 import { Vote } from '../types/vote.types';
+import { ReviewContentDto } from '../../modules/reviews/dto/review-content.dto';
 
-export interface ICreateReviewRequest extends CreateReviewDto {
+export interface ICreateReviewRequest extends ReviewContentDto {
+  employer: string;
   author: Types.ObjectId;
+}
+
+export interface IUpdateReviewRequest extends ReviewContentDto {
+  review: string;
 }
 
 export interface IFullReview {

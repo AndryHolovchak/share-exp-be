@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Employer } from '../../common/database/schemas/employer.schema';
 import { Model, RootFilterQuery, Types } from 'mongoose';
@@ -8,7 +13,10 @@ import { getPaginationOptions } from '../../common/helpers/pagination.helper';
 import { ReviewsService } from '../reviews/reviews.service';
 import { PaginationOutputEntity } from '../../common/entities/pagination-output.entity';
 import { IPopulatedEmployer } from '../../common/interfaces/employer.interface';
-import { ICreateReviewRequest } from '../../common/interfaces/review.interface';
+import {
+  ICreateReviewRequest,
+  IUpdateReviewRequest,
+} from '../../common/interfaces/review.interface';
 
 @Injectable()
 export class EmployersService {
@@ -95,5 +103,47 @@ export class EmployersService {
     ]);
 
     return review;
+  }
+
+  async updateReview(userId: Types.ObjectId, request: IUpdateReviewRequest) {
+    const oldReview = await this.reviewService.findById(request.review);
+
+    if (oldReview && !oldReview.author.equals(userId)) {
+      throw new ForbiddenException();
+    }
+
+    const updatedReview = await this.reviewService.update(request);
+
+    console.log({ oldReview, updatedReview });
+
+    if (!updatedReview) {
+      throw new NotFoundException('Review not found');
+    }
+
+    await this.employerModel.updateOne({ _id: oldReview!.employer }, [
+      {
+        $set: {
+          averageRating: {
+            $round: [
+              {
+                $divide: [
+                  {
+                    $add: [
+                      { $multiply: ['$averageRating', '$totalReviews'] },
+                      updatedReview.rating,
+                      { $multiply: [-1, oldReview!.rating] },
+                    ],
+                  },
+                  '$totalReviews',
+                ],
+              },
+              2,
+            ],
+          },
+        },
+      },
+    ]);
+
+    return updatedReview;
   }
 }
