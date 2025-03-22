@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -104,5 +105,11 @@ export class EmployersController {
       review: id,
       ...reviewContentDto,
     });
+  }
+
+  @Delete('reviews/:id')
+  @UseGuards(AuthGuard)
+  async deleteReview(@GetUser() user: User, @Param() { id }: IdDto) {
+    return this.employerService.deleteReview(user._id, id);
   }
 }

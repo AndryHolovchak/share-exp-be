@@ -4,9 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Employer } from '../../common/database/schemas/employer.schema';
-import { Model, RootFilterQuery, Types } from 'mongoose';
+import { Connection, Model, RootFilterQuery, Types } from 'mongoose';
 import { CreateEmployerDto } from './dto/create-employer.dto';
 import { GetListDto, PaginationDto } from '../../common/dto/common.dto';
 import { getPaginationOptions } from '../../common/helpers/pagination.helper';
@@ -17,11 +17,14 @@ import {
   ICreateReviewRequest,
   IUpdateReviewRequest,
 } from '../../common/interfaces/review.interface';
+import { Review } from '../../common/database/schemas/review.schema';
 
 @Injectable()
 export class EmployersService {
   constructor(
     @InjectModel(Employer.name) private employerModel: Model<Employer>,
+    @InjectModel(Review.name) private reviewModel: Model<Review>,
+    @InjectConnection() private readonly connection: Connection,
     private reviewService: ReviewsService,
   ) {}
 
@@ -145,5 +148,55 @@ export class EmployersService {
     ]);
 
     return updatedReview;
+  }
+
+  async deleteReview(userId: Types.ObjectId, reviewId: string) {
+    // const session = await this.connection.startSession();
+
+    try {
+      // await session.withTransaction(async () => {
+      const review = await this.reviewService.findById(reviewId);
+      // .session(session);
+
+      if (!review) {
+        throw new NotFoundException('Review not found');
+      }
+
+      if (!review.author.equals(userId)) {
+        throw new ForbiddenException();
+      }
+
+      await review.deleteOne(); //.session(session);
+
+      const stats = await this.reviewModel.aggregate<{
+        _id: string;
+        averageRating: number;
+        totalReviews: number;
+      }>([
+        { $match: { employer: review.employer } },
+        {
+          $group: {
+            _id: '$employer',
+            averageRating: { $avg: '$rating' },
+            totalReviews: { $sum: 1 },
+          },
+        },
+      ]);
+      // .session(session);
+
+      await this.employerModel.updateOne(
+        { _id: review.employer },
+        {
+          $set: {
+            averageRating: stats[0]?.averageRating ?? 0,
+            totalReviews: stats[0]?.totalReviews ?? 0,
+          },
+        },
+        // { session },
+      );
+      // });
+    } finally {
+      // await session.endSession();
+    }
   }
 }
