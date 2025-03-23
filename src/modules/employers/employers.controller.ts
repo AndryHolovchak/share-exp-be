@@ -26,15 +26,6 @@ import { ReviewContentDto } from '../reviews/dto/review-content.dto';
 @Controller('employers')
 export class EmployersController {
   constructor(private employerService: EmployersService) {}
-  @Post()
-  @ApiResponse({
-    status: 201,
-    type: Employer,
-  })
-  create(@Body() createEmployerDto: CreateEmployerDto) {
-    return this.employerService.create(createEmployerDto);
-  }
-
   @Get(':id')
   @ApiResponse({
     status: 200,

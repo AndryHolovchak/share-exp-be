@@ -7,17 +7,21 @@ import {
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Employer } from '../../common/database/schemas/employer.schema';
 import { Connection, Model, RootFilterQuery, Types } from 'mongoose';
-import { CreateEmployerDto } from './dto/create-employer.dto';
 import { GetListDto, PaginationDto } from '../../common/dto/common.dto';
 import { getPaginationOptions } from '../../common/helpers/pagination.helper';
 import { ReviewsService } from '../reviews/reviews.service';
 import { PaginationOutputEntity } from '../../common/entities/pagination-output.entity';
-import { IPopulatedEmployer } from '../../common/interfaces/employer.interface';
+import {
+  EmployerDetails,
+  IEmployerSource,
+  IPopulatedEmployer,
+} from '../../common/interfaces/employer.interface';
 import {
   ICreateReviewRequest,
   IUpdateReviewRequest,
 } from '../../common/interfaces/review.interface';
 import { Review } from '../../common/database/schemas/review.schema';
+import { EmployerSourceType } from '../../common/types/employer.types';
 
 @Injectable()
 export class EmployersService {
@@ -28,13 +32,38 @@ export class EmployersService {
     private reviewService: ReviewsService,
   ) {}
 
-  create(createEmployerDto: CreateEmployerDto) {
-    const newEmployer = new this.employerModel(createEmployerDto);
-    return newEmployer.save();
+  async createOrUpdateBySource(
+    source: IEmployerSource,
+    data: Omit<EmployerDetails, 'id'>,
+  ) {
+    return this.employerModel.findOneAndUpdate(
+      {
+        'source.externalId': source.externalId,
+        'source.type': source.type,
+      },
+      {
+        $set: {
+          name: data.name,
+          shortDescriptionHtml: data.shortDescriptionHtml,
+          // fullDescriptionHtml: data.fullDescriptionHtml,
+          categoryDescription: data.categoryDescription,
+          logoUrl: data.logoUrl,
+          website: data.website,
+        },
+      },
+      { upsert: true, new: true },
+    );
   }
 
   async findById(id: string): Promise<IPopulatedEmployer | null> {
     return this.employerModel.findById(id).lean();
+  }
+
+  async findByExternalId(externalId: string, sourceType: EmployerSourceType) {
+    return this.employerModel.findOne({
+      'source.type': sourceType,
+      'source.externalId': externalId,
+    });
   }
 
   async findAll(
