@@ -12,7 +12,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { EmployersService } from './employers.service';
-import { CreateEmployerDto } from './dto/create-employer.dto';
 import { GetListDto, IdDto, PaginationDto } from '../../common/dto/common.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { Employer } from '../../common/database/schemas/employer.schema';
