@@ -1,22 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
-  IsEnum,
-  IsNotEmpty,
+  IsObject,
   IsOptional,
   IsString,
   MaxLength,
+  ValidateNested,
 } from 'class-validator';
-import { Rating, RatingEnum } from '../../../common/types/review.types';
+import { Type } from 'class-transformer';
+import { ReviewRatingsDTO } from '../../../common/dto/review.dto';
 
 export class ReviewContentDto {
   @ApiProperty({
-    example: 5,
-    description: 'The rating of the review',
+    description: 'The ratings of the review',
+    type: ReviewRatingsDTO,
   })
-  @IsNotEmpty()
-  @IsEnum(RatingEnum)
-  rating: Rating;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => ReviewRatingsDTO)
+  ratings: ReviewRatingsDTO;
 
   @ApiProperty({
     example: 'This is a review content',

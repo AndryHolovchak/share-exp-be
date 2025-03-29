@@ -21,7 +21,7 @@ import {
   IUpdateReviewRequest,
 } from '../../common/interfaces/review.interface';
 import { Review } from '../../common/database/schemas/review.schema';
-import { EmployerSourceType } from '../../common/types/employer.types';
+import { ReviewRatingCategory } from '../../common/types/review.types';
 
 @Injectable()
 export class EmployersService {
@@ -57,13 +57,6 @@ export class EmployersService {
 
   async findById(id: string): Promise<IPopulatedEmployer | null> {
     return this.employerModel.findById(id).lean();
-  }
-
-  async findByExternalId(externalId: string, sourceType: EmployerSourceType) {
-    return this.employerModel.findOne({
-      'source.type': sourceType,
-      'source.externalId': externalId,
-    });
   }
 
   async findAll(
@@ -107,125 +100,138 @@ export class EmployersService {
   async addReview(request: ICreateReviewRequest) {
     await this.validateEmployer(request.employer);
 
-    const [review] = await Promise.all([
-      this.reviewService.create(request),
+    const review = await this.reviewService.create(request);
 
-      this.employerModel.updateOne({ _id: request.employer }, [
-        {
-          $set: {
-            totalReviews: { $add: ['$totalReviews', 1] },
-            averageRating: {
-              $round: [
-                {
-                  $divide: [
-                    {
-                      $add: [
-                        { $multiply: ['$averageRating', '$totalReviews'] },
-                        request.rating,
-                      ],
-                    },
-                    { $add: ['$totalReviews', 1] },
-                  ],
-                },
-              ],
-            },
+    const updateFields = Object.keys(review.ratings).reduce((acc, category) => {
+      acc[`averageRatings.${category}`] = {
+        $divide: [
+          {
+            $add: [
+              {
+                $multiply: [`$averageRatings.${category}`, '$totalReviews'],
+              },
+              review.ratings[category],
+            ],
           },
+          { $add: ['$totalReviews', 1] },
+        ],
+      };
+      return acc;
+    }, {});
+
+    await this.employerModel.updateOne({ _id: request.employer }, [
+      {
+        $set: {
+          totalReviews: { $add: ['$totalReviews', 1] },
+          ...updateFields,
         },
-      ]),
+      },
     ]);
 
     return review;
   }
-
   async updateReview(userId: Types.ObjectId, request: IUpdateReviewRequest) {
     const oldReview = await this.reviewService.findById(request.review);
 
-    if (oldReview && !oldReview.author.equals(userId)) {
+    if (!oldReview) {
+      throw new NotFoundException('Review not found');
+    }
+
+    if (!oldReview.author.equals(userId)) {
       throw new ForbiddenException();
     }
 
     const updatedReview = await this.reviewService.update(request);
 
-    console.log({ oldReview, updatedReview });
-
     if (!updatedReview) {
-      throw new NotFoundException('Review not found');
+      throw new NotFoundException('Review not found after update');
     }
 
-    await this.employerModel.updateOne({ _id: oldReview!.employer }, [
-      {
-        $set: {
-          averageRating: {
-            $round: [
-              {
-                $divide: [
-                  {
-                    $add: [
-                      { $multiply: ['$averageRating', '$totalReviews'] },
-                      updatedReview.rating,
-                      { $multiply: [-1, oldReview!.rating] },
-                    ],
-                  },
-                  '$totalReviews',
-                ],
-              },
-              2,
-            ],
-          },
-        },
+    const updateFields = Object.keys(updatedReview.ratings).reduce(
+      (acc, category) => {
+        acc[`averageRatings.${category}`] = {
+          $divide: [
+            {
+              $add: [
+                {
+                  $multiply: [`$averageRatings.${category}`, '$totalReviews'],
+                },
+                updatedReview.ratings[category],
+                { $multiply: [-1, oldReview.ratings[category]] },
+              ],
+            },
+            '$totalReviews',
+          ],
+        };
+        return acc;
       },
+      {},
+    );
+
+    await this.employerModel.updateOne({ _id: oldReview.employer }, [
+      { $set: updateFields },
     ]);
 
     return updatedReview;
   }
-
   async deleteReview(userId: Types.ObjectId, reviewId: string) {
-    // const session = await this.connection.startSession();
+    const review = await this.reviewService.findById(reviewId);
 
-    try {
-      // await session.withTransaction(async () => {
-      const review = await this.reviewService.findById(reviewId);
-      // .session(session);
-
-      if (!review) {
-        throw new NotFoundException('Review not found');
-      }
-
-      if (!review.author.equals(userId)) {
-        throw new ForbiddenException();
-      }
-
-      await review.deleteOne(); //.session(session);
-
-      const stats = await this.reviewModel.aggregate<{
-        _id: string;
-        averageRating: number;
-        totalReviews: number;
-      }>([
-        { $match: { employer: review.employer } },
-        {
-          $group: {
-            _id: '$employer',
-            averageRating: { $avg: '$rating' },
-            totalReviews: { $sum: 1 },
-          },
-        },
-      ]);
-      // .session(session);
-
-      await this.employerModel.updateOne(
-        { _id: review.employer },
-        {
-          $set: {
-            averageRating: stats[0]?.averageRating ?? 0,
-            totalReviews: stats[0]?.totalReviews ?? 0,
-          },
-        },
-        // { session },
-      );
-      // });
-    } finally {
-      // await session.endSession();
+    if (!review) {
+      throw new NotFoundException('Review not found');
     }
+
+    if (!review.author.equals(userId)) {
+      throw new ForbiddenException();
+    }
+
+    await review.deleteOne();
+
+    // Get all reviews for the employer and calculate the updated averages for each category
+    const reviews: Review[] = await this.reviewModel.aggregate([
+      { $match: { employer: review.employer } },
+      { $project: { ratings: 1 } },
+    ]);
+
+    const totalReviews = reviews.length;
+    const updatedRatings: Record<ReviewRatingCategory, number> = {} as Record<
+      ReviewRatingCategory,
+      number
+    >;
+
+    // Calculate the sum of ratings for each category
+    reviews.forEach((r) => {
+      Object.keys(r.ratings).forEach((category) => {
+        updatedRatings[category as ReviewRatingCategory] =
+          (updatedRatings[category as ReviewRatingCategory] || 0) +
+          r.ratings[category as ReviewRatingCategory];
+      });
+    });
+
+    // Calculate the new average for each category
+    const averageRatings: Record<ReviewRatingCategory, number> = {} as Record<
+      ReviewRatingCategory,
+      number
+    >;
+    Object.keys(updatedRatings).forEach((category) => {
+      averageRatings[category as ReviewRatingCategory] = totalReviews
+        ? parseFloat(
+            (
+              updatedRatings[category as ReviewRatingCategory] / totalReviews
+            ).toFixed(2),
+          )
+        : 0;
+    });
+
+    // Update employer's average ratings and total reviews
+    await this.employerModel.updateOne(
+      { _id: review.employer },
+      {
+        $set: {
+          averageRatings,
+          totalReviews,
+        },
+      },
+    );
   }
 }

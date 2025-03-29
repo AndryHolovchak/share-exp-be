@@ -6,7 +6,7 @@ import { IEmployersSource } from '../types';
 const BASE_URL = 'https://www.work.ua';
 
 export async function getEmployers(page: number) {
-  console.log(`starting to scrap employers ${page} page`);
+  console.log(`scrap ${page} page`);
   const pageHtml = await scrapePage(
     `${BASE_URL}/jobs/by-company/all_companies/?page=${page}`,
   );
@@ -34,7 +34,7 @@ export async function getEmployers(page: number) {
   return Array.from(companyIds.values());
 }
 export async function getDetails(id: string) {
-  console.log(`fetching employer details ${id}`);
+  console.log(`scrap details ${id}`);
 
   const pageHtml = await scrapePage(`${BASE_URL}/jobs/by-company/${id}/`);
   const $ = cheerio.load(pageHtml);
@@ -46,13 +46,16 @@ export async function getDetails(id: string) {
   );
   const website = descriptionCard.find('.website-company a').attr('href');
 
-  const descriptionNode = $('.company-description');
-  const shortDescriptionNode = descriptionNode
+  const descriptionNodes = $('.company-description')
     .children()
     .filter(function () {
       return $(this).find('img').length === 0;
-    })
-    .first();
+    });
+
+  const shortDescriptionNode =
+    descriptionNodes.first().text().length < 24
+      ? descriptionNodes.slice(0, 2)
+      : descriptionNodes.first();
 
   const result: Omit<EmployerDetails, 'logoUrl'> = {
     name: nameNode.text(),

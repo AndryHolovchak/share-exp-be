@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Rating, RatingEnum } from '../../types/review.types';
+import { ReviewRatings } from '../../types/review.types';
 import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Review {
-  @Prop({ required: true, enum: RatingEnum })
-  rating: Rating;
+  @Prop({ type: Object, required: true })
+  ratings: ReviewRatings;
 
   @Prop({
     required: true,

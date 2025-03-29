@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { Rating } from '../types/review.types';
+import { ReviewRatings } from '../types/review.types';
 import { Employer } from '../database/schemas/employer.schema';
 import { User } from '../database/schemas/user.schema';
 import { Vote } from '../types/vote.types';
@@ -17,7 +17,7 @@ export interface IUpdateReviewRequest extends ReviewContentDto {
 export interface IFullReview {
   _id: string;
   content?: string;
-  rating: Rating;
+  ratings: ReviewRatings;
   employer: Employer;
   author: User;
   anonymous: boolean;

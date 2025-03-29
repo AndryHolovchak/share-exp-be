@@ -10,25 +10,29 @@ async function main() {
   const app = await NestFactory.createApplicationContext(AppModule);
   const employerService = app.get(EmployersService);
 
-  const employers = await source.getEmployers(1);
+  // start from 453
+  for (let page = 360; page < 1677; page++) {
+    console.log(`Page ${page}`);
+    const employers = await source.getEmployers(page);
 
-  for (const employer of employers) {
-    const details = await source.getDetails(employer.id);
+    for (const employer of employers) {
+      const details = await source.getDetails(employer.id);
 
-    if (details) {
-      await employerService.createOrUpdateBySource(
-        {
-          type: 'work-ua',
-          externalId: employer.id,
-        },
-        {
-          ...details,
-          logoUrl: employer.logoUrl,
-        },
-      );
+      if (details) {
+        await employerService.createOrUpdateBySource(
+          {
+            type: 'work-ua',
+            externalId: employer.id,
+          },
+          {
+            ...details,
+            logoUrl: employer.logoUrl,
+          },
+        );
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 3000));
     }
-
-    await new Promise((resolve) => setTimeout(resolve, 3000));
   }
 
   await app.close();

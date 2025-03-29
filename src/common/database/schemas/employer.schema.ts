@@ -1,7 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Rating, RatingEnum } from '../../types/review.types';
-import { EmployerSourceEnum } from '../../types/employer.types';
+import {
+  EmployerAverageReviewRatings,
+  EmployerSourceEnum,
+} from '../../types/employer.types';
 import { IEmployerSource } from '../../interfaces/employer.interface';
+import { DEFAULT_REVIEW_RATINGS } from '../../constants/review.constants';
 
 @Schema({ timestamps: true })
 export class Employer {
@@ -25,9 +28,6 @@ export class Employer {
   @Prop({ required: true })
   shortDescriptionHtml: string;
 
-  // @Prop({ required: true })
-  // fullDescriptionHtml: string;
-
   @Prop({ required: true })
   categoryDescription: string;
 
@@ -38,8 +38,12 @@ export class Employer {
   website?: string;
   // --
 
-  @Prop({ required: true, type: Number, enum: RatingEnum, default: 0 })
-  averageRating: Rating;
+  @Prop({
+    type: Object,
+    required: true,
+    default: DEFAULT_REVIEW_RATINGS,
+  })
+  averageRatings: EmployerAverageReviewRatings;
 
   @Prop({ required: true, type: Number, default: 0 })
   totalReviews: number;
