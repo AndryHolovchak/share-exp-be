@@ -22,6 +22,7 @@ import {
 } from '../../common/interfaces/review.interface';
 import { Review } from '../../common/database/schemas/review.schema';
 import { ReviewRatingCategory } from '../../common/types/review.types';
+import { EMPTY_REVIEW_RATINGS } from '../../common/constants/review.constants';
 
 @Injectable()
 export class EmployersService {
@@ -104,16 +105,21 @@ export class EmployersService {
 
     const updateFields = Object.keys(review.ratings).reduce((acc, category) => {
       acc[`averageRatings.${category}`] = {
-        $divide: [
+        $round: [
           {
-            $add: [
+            $divide: [
               {
-                $multiply: [`$averageRatings.${category}`, '$totalReviews'],
+                $add: [
+                  {
+                    $multiply: [`$averageRatings.${category}`, '$totalReviews'],
+                  },
+                  review.ratings[category],
+                ],
               },
-              review.ratings[category],
+              { $add: ['$totalReviews', 1] },
             ],
           },
-          { $add: ['$totalReviews', 1] },
+          2, // Round to 2 decimal places
         ],
       };
       return acc;
@@ -187,17 +193,13 @@ export class EmployersService {
 
     await review.deleteOne();
 
-    // Get all reviews for the employer and calculate the updated averages for each category
-    const reviews: Review[] = await this.reviewModel.aggregate([
-      { $match: { employer: review.employer } },
-      { $project: { ratings: 1 } },
-    ]);
+    const reviews = await this.reviewModel.find({
+      employer: review.employer,
+    });
 
     const totalReviews = reviews.length;
-    const updatedRatings: Record<ReviewRatingCategory, number> = {} as Record<
-      ReviewRatingCategory,
-      number
-    >;
+    const updatedRatings: Record<ReviewRatingCategory, number> =
+      EMPTY_REVIEW_RATINGS;
 
     // Calculate the sum of ratings for each category
     reviews.forEach((r) => {

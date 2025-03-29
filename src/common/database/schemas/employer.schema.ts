@@ -4,7 +4,7 @@ import {
   EmployerSourceEnum,
 } from '../../types/employer.types';
 import { IEmployerSource } from '../../interfaces/employer.interface';
-import { DEFAULT_REVIEW_RATINGS } from '../../constants/review.constants';
+import { EMPTY_REVIEW_RATINGS } from '../../constants/review.constants';
 
 @Schema({ timestamps: true })
 export class Employer {
@@ -41,7 +41,7 @@ export class Employer {
   @Prop({
     type: Object,
     required: true,
-    default: DEFAULT_REVIEW_RATINGS,
+    default: EMPTY_REVIEW_RATINGS,
   })
   averageRatings: EmployerAverageReviewRatings;
 
