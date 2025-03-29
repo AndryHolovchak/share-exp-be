@@ -11,7 +11,7 @@ async function main() {
   const employerService = app.get(EmployersService);
 
   // start from 453
-  for (let page = 360; page < 1677; page++) {
+  for (let page = 0; page < 1677; page++) {
     console.log(`Page ${page}`);
     const employers = await source.getEmployers(page);
 
